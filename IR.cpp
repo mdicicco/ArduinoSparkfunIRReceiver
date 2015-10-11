@@ -42,12 +42,12 @@ void IRDetector::interrupt() {
     command++;
   }
   else { // Start new command
-    // command = 0; // No need as we work in 16-bit chunks
+    // command = 0; // No need as we work in 32-bit chunks
     numBitsAvailable = 0;
   }
 
-  // Command is finished on 16 bits.
-  if (numBitsAvailable == 16) {
+  // Command is finished on 32 bits.
+  if (numBitsAvailable == 32) {
 
     buffer.push(command);
     numBitsAvailable = 0;

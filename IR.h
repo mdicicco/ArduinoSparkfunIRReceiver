@@ -31,7 +31,7 @@
 #define NULL 0
 #endif
 
-typedef unsigned int command_t;
+typedef unsigned int command_t;  // This needs to be 32 bits, check on older atmel chips
 
 // Ring buffer for storing unsigned ints
 class RingBuffer {
@@ -71,7 +71,7 @@ class IRDetector {
 public:
   // Codes
   //  HEADER    0001000011101111 4335
-  //  onoff     1101100000100111 55335
+  //  ON_OFF    1101100000100111 55335
   //  A         1111100000000111 63495
   //  B         0111100010000111 30855
   //  C         0101100010100111 22695
@@ -93,18 +93,29 @@ public:
   static const command_t C = 22695;
 
   // Simple helper for translating commands to their names
-  // If unknown returns NULL
+  // Words should have the upper 16 bits match the header
+  // If the header matches but the lower bits match, return UNKNOWN
+  // which means it's likely a remote with a similar protocol but
+  // with an unknown button
+  // 32 bits without the header matching will return NULL
   inline char* commandToString(command_t cmd) {
-    if (cmd == ON_OFF) return "ON-OFF";
-    else if (cmd == UP) return "UP";
-    else if (cmd == DOWN) return "DOWN";
-    else if (cmd == CENTER) return "CENTER";
-    else if (cmd == LEFT) return "LEFT";
-    else if (cmd == RIGHT) return "RIGHT";
-    else if (cmd == A) return "A";
-    else if (cmd == B) return "B";
-    else if (cmd == C) return "C";
-    else return NULL;
+    // Check that the upper 16 bits match the header
+    if ((cmd & 0xFFFF0000) == (HEADER << 16) {
+      cmd = cmd & 0x0000FFFF;
+      if (cmd == ON_OFF) return "ON-OFF";
+      else if (cmd == UP) return "UP";
+      else if (cmd == DOWN) return "DOWN";
+      else if (cmd == CENTER) return "CENTER";
+      else if (cmd == LEFT) return "LEFT";
+      else if (cmd == RIGHT) return "RIGHT";
+      else if (cmd == A) return "A";
+      else if (cmd == B) return "B";
+      else if (cmd == C) return "C";
+      else return "UNKNOWN";
+    }
+    else {
+      return NULL;
+    }
   }
 
 private:
