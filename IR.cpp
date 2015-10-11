@@ -1,6 +1,8 @@
 /*
   IR.cpp - Library for receiving data from a particular IR remote.
   Created by Konstantin Tretyakov (http://kt.era.ee/), 2012.
+  Updated by Matt DiCicco (https://github.com/mdicicco), 2015
+   to support newer model of sparkfun IR Remote
   MIT license.
 */
 
@@ -16,7 +18,7 @@ void IRDetector::setup() {
   pinMode(PIN_ARDUINO, INPUT);
   PCICR  |=  4; // enable PCIE2 which services PCINT18
   PCMSK2 |=  4; // enable PCINT18 --> Pin Change Interrupt of PD2
-  
+
   lastBitTimestamp = 0;
   numBitsAvailable = 0;
   command = 0;
@@ -30,12 +32,12 @@ void IRDetector::interrupt() {
   elapsed = curTime - lastBitTimestamp;
   lastBitTimestamp = curTime;
   //buffer.push(elapsed);
-  
+
   numBitsAvailable++;
-  if (elapsed < 1500) { // Zero
+  if (elapsed < 1200) { // Zero
     command <<= 1;
   }
-  else if (elapsed < 2500) { // One
+  else if (elapsed < 2400) { // One
     command <<= 1;
     command++;
   }
@@ -43,10 +45,10 @@ void IRDetector::interrupt() {
     // command = 0; // No need as we work in 16-bit chunks
     numBitsAvailable = 0;
   }
-  
+
   // Command is finished on 16 bits.
   if (numBitsAvailable == 16) {
-    
+
     buffer.push(command);
     numBitsAvailable = 0;
   }
